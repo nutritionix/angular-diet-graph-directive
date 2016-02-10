@@ -1,0 +1,32 @@
+{
+  "name": "angular-diet-graph-directive",
+  "version": "1.0.0",
+  "homepage": "https://github.com/nutritionix/angular-diet-graph-directive",
+  "authors": [
+    "Yurko Fedoriv <yfedoriv@nutritionix.com>"
+  ],
+  "description": "AngularJS directive component for showing diet logging calendar",
+  "main": "dist/angular-diet-graph-directive.js",
+  "keywords": [
+    "angular",
+    "diet calendar",
+    "directive"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "node_modules",
+    "bower_components",
+    "test",
+    "tests",
+    "gulpfile.js",
+    "karma.conf.js",
+    "/index.html",
+    "assets"
+  ],
+  "dependencies": {
+    "angular": ">=1.4",
+    "angular-moment": ">=1.0.0-beta.2",
+    "moment-timezone": "~0.5.0"
+  }
+}
