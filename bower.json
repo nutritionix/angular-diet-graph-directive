@@ -25,6 +25,7 @@
     "assets"
   ],
   "dependencies": {
+    "cal-heatmap": "~3.5.3",
     "angular": ">=1.4",
     "angular-moment": ">=1.0.0-beta.2",
     "moment-timezone": "~0.5.0"
