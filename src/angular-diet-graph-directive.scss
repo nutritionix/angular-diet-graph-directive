@@ -1,0 +1,187 @@
+.nix-diet-graph {
+  .panel {
+    margin-bottom: 20px;
+    background-color: #fff;
+    border: 1px solid transparent;
+    border-radius: 4px;
+    box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
+    border-color: #ddd;
+  }
+
+  .panel-heading {
+    padding: 10px 15px;
+    border-bottom: 1px solid transparent;
+    border-top-left-radius: 3px;
+    border-top-right-radius: 3px;
+    color: #333;
+    background-color: #f5f5f5;
+    border-color: #ddd;
+  }
+
+  .panel-graph .panel-heading {
+    font-weight: bold;
+  }
+
+  .panel-graph .panel-body {
+    padding-bottom: 0;
+  }
+
+  .panel-graph .legend {
+    font-size: 11px;
+    padding-bottom: 15px;
+  }
+
+  .panel-graph .legend .text {
+    padding: 0 6px;
+    margin-top: -4px;
+    vertical-align: super;
+  }
+
+  .grid {
+    width: 28px;
+    height: 28px;
+    background-color: #fff;
+    border: 1px solid #fff;
+    float: left;
+  }
+
+  .panel-graph .legend .grid {
+    width: 16px;
+    height: 16px;
+    margin-right: -3px;
+  }
+
+  .panel-graph .legend * {
+    display: inline-block;
+    float: none;
+  }
+
+  .panel-graph h4 {
+    text-align: left;
+    color: #999;
+  }
+
+  .grid.min {
+    background-color: #BBDCA2;
+  }
+
+  .grid.med {
+    background-color: #88C25A;
+  }
+
+  .grid.max {
+    background-color: #58A61C;
+  }
+
+  .grid.max1 {
+    background-color: #F29898;
+  }
+
+  .grid.max2 {
+    background-color: #E64A48;
+  }
+
+  .grid.max3 {
+    background-color: #DC0000;
+  }
+
+  .cal-heatmap-container .subdomain-text {
+    fill: black;
+  }
+
+  .cal-heatmap-container .q3 {
+    background-color: #BBDCA2;
+    fill: #BBDCA2;
+  }
+
+  .cal-heatmap-container .q2 {
+    background-color: #88C25A;
+    fill: #88C25A;
+  }
+
+  .cal-heatmap-container .q1 {
+    background-color: #58A61C;
+    fill: #58A61C;
+  }
+
+  .cal-heatmap-container .q4 {
+    background-color: #F29898;
+    fill: #F29898;
+  }
+
+  .cal-heatmap-container .q5 {
+    background-color: #E64A48;
+    fill: #E64A48;
+  }
+
+  .cal-heatmap-container .q6 {
+    background-color: #DC0000;
+    fill: #DC0000;
+  }
+
+  .cal-heatmap-container .graph-label {
+    color: #999;
+    font-size: 18px;
+  }
+
+  .table-grid,
+  .table-grid tbody tr td {
+    margin: 0;
+    padding: 0;
+    line-height: normal;
+  }
+
+  .table-grid {
+    margin: 0 auto 15px auto;
+  }
+
+  .table-grid thead tr th {
+    text-align: center;
+  }
+
+  .table-grid tbody tr td.log-day {
+    font-size: 11px;
+    text-align: right;
+    padding: 0 6px 0 0;
+  }
+
+  .graph-summary {
+    border-top: 1px solid #ddd;
+  }
+
+  .graph-summary > div {
+    border-right: 1px solid #ddd;
+    min-height: 63px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    margin-bottom: -5px;
+  }
+
+  .graph-summary > div:last-child {
+    border: none;
+  }
+
+  .graph-summary > div > p {
+    margin-bottom: 0;
+    font-size: 12px;
+  }
+
+  .graph-summary > div > strong {
+    font-size: 18px;
+  }
+
+  .table-wrap {
+    display: inline-block;
+  }
+
+  .heat-map-calendar {
+    margin-bottom: 10px;
+  }
+
+  .ch-tooltip {
+    color: #333;
+    background: #f5f5f5;
+    width: 100px;
+  }
+}

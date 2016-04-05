@@ -5,7 +5,8 @@
     .run(function ($templateCache) {
       $templateCache.put(
         'nix.diet-graph-directive.html',
-        `<div class="panel panel-default panel-graph">
+        `<div class="nix_diet-graph">
+          <div class="panel panel-default panel-graph">
             <div class="panel-heading">Diet Logging Graph</div>
             <div class="panel-body text-center">
               <div style="display: inline-block" class="heat-map-calendar">
@@ -25,7 +26,9 @@
                 </div>
               </div>
             </div>
-         </div>`
+         </div>
+        </div>`
+
       );
     })
     .directive('dietGraph', function ($filter) {

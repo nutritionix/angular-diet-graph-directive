@@ -24,6 +24,22 @@ gulp.task('build.min.js', ['build.es5.js'], function () {
     .pipe(gulp.dest('./dist'));
 });
 
-gulp.task('default', ['build.min.js'], function () {
+gulp.task('build.css', function () {
+  return gulp.src([`./src/${name}.scss`])
+    .pipe(gulp.plugins.sass({
+      errLogToConsole: true
+    }))
+    .pipe(gulp.plugins.rename(`${name}.css`))
+    .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('build.min.css', ['build.css'], function () {
+  return gulp.src([`./dist/${name}.css`])
+    .pipe(gulp.plugins.minifyCss({compatibility: 'ie9'}))
+    .pipe(gulp.plugins.rename(`${name}.min.css`))
+    .pipe(gulp.dest('./dist'));
+});
+
+gulp.task('default', ['build.min.js', 'build.min.css'], function () {
   console.log('Build complete');
 });
