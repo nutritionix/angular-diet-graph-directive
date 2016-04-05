@@ -19,7 +19,8 @@
   font-weight: bold; }
 
 .nix_diet-graph .panel-graph .panel-body {
-  padding-bottom: 0; }
+  padding-bottom: 0;
+  padding-top: 15px; }
 
 .nix_diet-graph .panel-graph .legend {
   font-size: 11px;
@@ -118,24 +119,26 @@
 
 .nix_diet-graph .graph-summary {
   border-top: 1px solid #ddd; }
-
-.nix_diet-graph .graph-summary > div {
-  border-right: 1px solid #ddd;
-  min-height: 63px;
-  padding-top: 10px;
-  padding-bottom: 10px;
-  text-align: center;
-  margin-bottom: -5px; }
-
-.nix_diet-graph .graph-summary > div:last-child {
-  border: none; }
-
-.nix_diet-graph .graph-summary > div > p {
-  margin-bottom: 0;
-  font-size: 12px; }
-
-.nix_diet-graph .graph-summary > div > strong {
-  font-size: 18px; }
+  .nix_diet-graph .graph-summary .column {
+    width: 50%;
+    position: relative;
+    float: left;
+    padding-left: 15px;
+    padding-right: 15px; }
+  .nix_diet-graph .graph-summary > div {
+    border-right: 1px solid #ddd;
+    min-height: 63px;
+    padding-top: 10px;
+    padding-bottom: 10px;
+    text-align: center;
+    margin-bottom: -5px; }
+  .nix_diet-graph .graph-summary > div:last-child {
+    border: none; }
+  .nix_diet-graph .graph-summary > div > p {
+    margin-bottom: 0;
+    font-size: 12px; }
+  .nix_diet-graph .graph-summary > div > strong {
+    font-size: 18px; }
 
 .nix_diet-graph .table-wrap {
   display: inline-block; }

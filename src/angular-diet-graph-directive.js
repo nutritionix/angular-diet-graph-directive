@@ -16,11 +16,11 @@
               </div>
 
               <div class="row graph-summary" ng-if="vm.stats.total">
-                <div class="col-xs-6">
+                <div class="column">
                   <p>Total Day Tracked</p>
                   <strong>{{vm.stats.total}} Days</strong>
                 </div>
-                <div class="col-xs-6">
+                <div class="column">
                   <p>% Days of Green</p>
                   <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>
                 </div>
