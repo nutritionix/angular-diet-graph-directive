@@ -1,4 +1,4 @@
-.nix-diet-graph .panel {
+.nix_diet-graph .panel {
   margin-bottom: 20px;
   background-color: #fff;
   border: 1px solid transparent;
@@ -6,7 +6,7 @@
   box-shadow: 0 1px 1px rgba(0, 0, 0, 0.05);
   border-color: #ddd; }
 
-.nix-diet-graph .panel-heading {
+.nix_diet-graph .panel-heading {
   padding: 10px 15px;
   border-bottom: 1px solid transparent;
   border-top-left-radius: 3px;
@@ -15,111 +15,111 @@
   background-color: #f5f5f5;
   border-color: #ddd; }
 
-.nix-diet-graph .panel-graph .panel-heading {
+.nix_diet-graph .panel-graph .panel-heading {
   font-weight: bold; }
 
-.nix-diet-graph .panel-graph .panel-body {
+.nix_diet-graph .panel-graph .panel-body {
   padding-bottom: 0; }
 
-.nix-diet-graph .panel-graph .legend {
+.nix_diet-graph .panel-graph .legend {
   font-size: 11px;
   padding-bottom: 15px; }
 
-.nix-diet-graph .panel-graph .legend .text {
+.nix_diet-graph .panel-graph .legend .text {
   padding: 0 6px;
   margin-top: -4px;
   vertical-align: super; }
 
-.nix-diet-graph .grid {
+.nix_diet-graph .grid {
   width: 28px;
   height: 28px;
   background-color: #fff;
   border: 1px solid #fff;
   float: left; }
 
-.nix-diet-graph .panel-graph .legend .grid {
+.nix_diet-graph .panel-graph .legend .grid {
   width: 16px;
   height: 16px;
   margin-right: -3px; }
 
-.nix-diet-graph .panel-graph .legend * {
+.nix_diet-graph .panel-graph .legend * {
   display: inline-block;
   float: none; }
 
-.nix-diet-graph .panel-graph h4 {
+.nix_diet-graph .panel-graph h4 {
   text-align: left;
   color: #999; }
 
-.nix-diet-graph .grid.min {
+.nix_diet-graph .grid.min {
   background-color: #BBDCA2; }
 
-.nix-diet-graph .grid.med {
+.nix_diet-graph .grid.med {
   background-color: #88C25A; }
 
-.nix-diet-graph .grid.max {
+.nix_diet-graph .grid.max {
   background-color: #58A61C; }
 
-.nix-diet-graph .grid.max1 {
+.nix_diet-graph .grid.max1 {
   background-color: #F29898; }
 
-.nix-diet-graph .grid.max2 {
+.nix_diet-graph .grid.max2 {
   background-color: #E64A48; }
 
-.nix-diet-graph .grid.max3 {
+.nix_diet-graph .grid.max3 {
   background-color: #DC0000; }
 
-.nix-diet-graph .cal-heatmap-container .subdomain-text {
+.nix_diet-graph .cal-heatmap-container .subdomain-text {
   fill: black; }
 
-.nix-diet-graph .cal-heatmap-container .q3 {
+.nix_diet-graph .cal-heatmap-container .q3 {
   background-color: #BBDCA2;
   fill: #BBDCA2; }
 
-.nix-diet-graph .cal-heatmap-container .q2 {
+.nix_diet-graph .cal-heatmap-container .q2 {
   background-color: #88C25A;
   fill: #88C25A; }
 
-.nix-diet-graph .cal-heatmap-container .q1 {
+.nix_diet-graph .cal-heatmap-container .q1 {
   background-color: #58A61C;
   fill: #58A61C; }
 
-.nix-diet-graph .cal-heatmap-container .q4 {
+.nix_diet-graph .cal-heatmap-container .q4 {
   background-color: #F29898;
   fill: #F29898; }
 
-.nix-diet-graph .cal-heatmap-container .q5 {
+.nix_diet-graph .cal-heatmap-container .q5 {
   background-color: #E64A48;
   fill: #E64A48; }
 
-.nix-diet-graph .cal-heatmap-container .q6 {
+.nix_diet-graph .cal-heatmap-container .q6 {
   background-color: #DC0000;
   fill: #DC0000; }
 
-.nix-diet-graph .cal-heatmap-container .graph-label {
+.nix_diet-graph .cal-heatmap-container .graph-label {
   color: #999;
   font-size: 18px; }
 
-.nix-diet-graph .table-grid,
-.nix-diet-graph .table-grid tbody tr td {
+.nix_diet-graph .table-grid,
+.nix_diet-graph .table-grid tbody tr td {
   margin: 0;
   padding: 0;
   line-height: normal; }
 
-.nix-diet-graph .table-grid {
+.nix_diet-graph .table-grid {
   margin: 0 auto 15px auto; }
 
-.nix-diet-graph .table-grid thead tr th {
+.nix_diet-graph .table-grid thead tr th {
   text-align: center; }
 
-.nix-diet-graph .table-grid tbody tr td.log-day {
+.nix_diet-graph .table-grid tbody tr td.log-day {
   font-size: 11px;
   text-align: right;
   padding: 0 6px 0 0; }
 
-.nix-diet-graph .graph-summary {
+.nix_diet-graph .graph-summary {
   border-top: 1px solid #ddd; }
 
-.nix-diet-graph .graph-summary > div {
+.nix_diet-graph .graph-summary > div {
   border-right: 1px solid #ddd;
   min-height: 63px;
   padding-top: 10px;
@@ -127,23 +127,23 @@
   text-align: center;
   margin-bottom: -5px; }
 
-.nix-diet-graph .graph-summary > div:last-child {
+.nix_diet-graph .graph-summary > div:last-child {
   border: none; }
 
-.nix-diet-graph .graph-summary > div > p {
+.nix_diet-graph .graph-summary > div > p {
   margin-bottom: 0;
   font-size: 12px; }
 
-.nix-diet-graph .graph-summary > div > strong {
+.nix_diet-graph .graph-summary > div > strong {
   font-size: 18px; }
 
-.nix-diet-graph .table-wrap {
+.nix_diet-graph .table-wrap {
   display: inline-block; }
 
-.nix-diet-graph .heat-map-calendar {
+.nix_diet-graph .heat-map-calendar {
   margin-bottom: 10px; }
 
-.nix-diet-graph .ch-tooltip {
+.nix_diet-graph .ch-tooltip {
   color: #333;
   background: #f5f5f5;
   width: 100px; }
