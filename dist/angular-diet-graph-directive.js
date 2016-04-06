@@ -4,7 +4,7 @@
   'use strict';
 
   angular.module('nix.diet-graph-directive', ['nix.track-api-client', 'angularMoment']).run(["$templateCache", function ($templateCache) {
-    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">Diet Logging Graph</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button class="previous" class="btn"><i class="fa fa-chevron-left"></i></button>\n                <button class="next" class="btn"><i class="fa fa-chevron-right"></i></button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Day Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
+    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button class="previous" class="btn"><i class="fa fa-chevron-left"></i></button>\n                <button class="next" class="btn"><i class="fa fa-chevron-right"></i></button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Day Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
   }]).directive('dietGraph', ["$filter", function ($filter) {
     return {
       templateUrl: 'nix.diet-graph-directive.html',
@@ -79,6 +79,8 @@
           next: element.find(".next"),
           previous: element.find(".previous")
         };
+
+        vm.title = attributes.title || 'Diet Logging Graph';
 
         cal.formatNumber = function (number) {
           return $filter('number')($filter('fdaRound')(number, 'calories'), 0);

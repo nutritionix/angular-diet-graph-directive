@@ -7,7 +7,7 @@
         'nix.diet-graph-directive.html',
         `<div class="nix_diet-graph">
           <div class="panel panel-default panel-graph">
-            <div class="panel-heading">Diet Logging Graph</div>
+            <div class="panel-heading">{{vm.title}}</div>
             <div class="panel-body text-center">
               <div style="display: inline-block" class="heat-map-calendar">
                 <button class="previous" class="btn"><i class="fa fa-chevron-left"></i></button>
@@ -106,6 +106,8 @@
             next:     element.find(".next"),
             previous: element.find(".previous")
           };
+          
+          vm.title = attributes.title || 'Diet Logging Graph';
 
           cal.formatNumber = number => $filter('number')($filter('fdaRound')(number, 'calories'), 0);
 
