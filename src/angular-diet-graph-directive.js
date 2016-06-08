@@ -17,7 +17,7 @@
 
               <div class="row graph-summary" ng-if="vm.stats.total">
                 <div class="column">
-                  <p>Total Day Tracked</p>
+                  <p>Total Days Tracked</p>
                   <strong>{{vm.stats.total}} Days</strong>
                 </div>
                 <div class="column">
@@ -106,7 +106,7 @@
             next:     element.find(".next"),
             previous: element.find(".previous")
           };
-          
+
           vm.title = attributes.title || 'Diet Logging Graph';
 
           cal.formatNumber = number => $filter('number')($filter('fdaRound')(number, 'calories'), 0);
