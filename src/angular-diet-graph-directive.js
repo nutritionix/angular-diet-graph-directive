@@ -40,7 +40,8 @@
         scope:            {},
         bindToController: {
           api:            '=?',
-          targetCalories: '=?'
+          targetCalories: '=?',
+          enableFdaRound: '=?'
         },
         controller:       function ($scope, nixTrackApiClient, moment) {
           let vm = this;
@@ -109,7 +110,12 @@
 
           vm.title = attributes.title || 'Diet Logging Graph';
 
-          cal.formatNumber = number => $filter('number')($filter('fdaRound')(number, 'calories'), 0);
+          cal.formatNumber = number => {
+            if (vm.enableFdaRound) {
+              number = $filter('fdaRound')(number, 'calories');
+            }
+            return $filter('number')(number, 0);
+          };
 
           cal.init({
             tooltip:                 true,

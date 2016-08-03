@@ -1,10 +1,39 @@
 'use strict';
 
+const argv = require('yargs').argv;
 const fs = require('fs-extra');
 const gulp = require('gulp');
 gulp.plugins = require('gulp-load-plugins')();
 
-const name = 'angular-diet-graph-directive';
+const bowerJson = require(__dirname + '/bower.json');
+const name = bowerJson['name'];
+const libFile = `./src/${name}.js`;
+
+gulp.task('setVersion', function () {
+  let version = argv.version;
+  if (!version) {
+    console.error('--version=x.x.x param is required');
+    process.exit(1);
+    return;
+  }
+
+  ['bower.json', 'package.json'].forEach(file => {
+    file = __dirname + '/' + file;
+    fs.writeFileSync(
+      file,
+      fs.readFileSync(file)
+        .toString()
+        .replace(/"version":\s*"[\d.]+?"/, `"version": "${version}"`)
+    );
+  });
+
+  fs.writeFileSync(
+    libFile,
+    fs.readFileSync(libFile)
+      .toString()
+      .replace(/@version\s+[^\s\n]+/, `@version ${version}`)
+  );
+});
 
 gulp.task('clean', function () {
   fs.removeSync('./dist/*');
