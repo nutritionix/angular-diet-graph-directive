@@ -31,7 +31,7 @@
 
       );
     })
-    .directive('dietGraph', function ($filter) {
+    .directive('dietGraph', function ($filter, $log) {
       return {
         templateUrl:      'nix.diet-graph-directive.html',
         replace:          true,
@@ -40,19 +40,36 @@
         scope:            {},
         bindToController: {
           api:            '=?',
+          nutrientId:     '=?',
+          target:         '=?',
+          // deprecated
           targetCalories: '=?',
           enableFdaRound: '=?'
         },
         controller:       function ($scope, nixTrackApiClient, moment) {
           let vm = this;
 
-          vm.targetCalories = vm.targetCalories || 2000;
+          if (vm.targetCalories) {
+            $log.warn('Since widget now supports multiple nutrients "targetCalories" is now deprecated, please use "target"');
+          }
+
+          vm.target     = vm.target || vm.targetCalories || 2000;
+          vm.nutrientId = vm.nutrientId || 208;
+
+          let nutrientMap = {
+            208: 'total_cal',
+            205: 'total_carb',
+            204: 'total_fat',
+            203: 'total_protein',
+            307: 'total_sodium'
+          };
+
           vm.legend = [
-            vm.targetCalories * (100 - 15) / 100,
-            vm.targetCalories * (100 - 15 / 2) / 100,
-            vm.targetCalories,
-            vm.targetCalories * (100 + 15 / 2) / 100,
-            vm.targetCalories * (100 + 15) / 100
+            vm.target * (100 - 15) / 100,
+            vm.target * (100 - 15 / 2) / 100,
+            vm.target,
+            vm.target * (100 + 15 / 2) / 100,
+            vm.target * (100 + 15) / 100
           ];
 
           vm.afterLoadDomain = (date) => { vm.stats.calculate(date); };
@@ -70,8 +87,8 @@
               });
 
 
-              this.total = _.keys(currentMonthTotals).length;
-              this.green = _.filter(currentMonthTotals, value => value <= vm.targetCalories).length;
+              this.total           = _.keys(currentMonthTotals).length;
+              this.green           = _.filter(currentMonthTotals, value => value <= vm.target).length;
               this.greenPercentage = this.green / this.total * 100;
             },
             currentMonthTotals: null,
@@ -88,7 +105,7 @@
               vm.calendar = {};
 
               angular.forEach(totals.dates, function (value) {
-                vm.calendar[moment(value.date).unix()] = value.total_cal;
+                vm.calendar[moment(value.date).unix()] = value[nutrientMap[vm.nutrientId]];
               });
 
               vm.stats.calculate();
@@ -108,11 +125,34 @@
             previous: element.find(".previous")
           };
 
+          let nutrientSettings = ({
+            208: {
+              title: 'Calories',
+              round: 'calories'
+            },
+            205: {
+              title: 'Carb',
+              round: 'total_carb'
+            },
+            204: {
+              title: 'Fat',
+              round: 'total_fat'
+            },
+            203: {
+              title: 'Protein',
+              round: 'protein'
+            },
+            307: {
+              title: 'Sodium',
+              round: 'sodium'
+            }
+          })[vm.nutrientId];
+
           vm.title = attributes.title || 'Diet Logging Graph';
 
           cal.formatNumber = number => {
             if (vm.enableFdaRound) {
-              number = $filter('fdaRound')(number, 'calories');
+              number = $filter('fdaRound')(number, nutrientSettings.round);
             }
             return $filter('number')(number, 0);
           };
@@ -158,7 +198,7 @@
             domainLabelFormat:    "%B %Y",
             subDomainTitleFormat: {
               empty:  "not tracked",
-              filled: "{count} Calories"
+              filled: `{count} ${nutrientSettings.title}`
             }
           });
 

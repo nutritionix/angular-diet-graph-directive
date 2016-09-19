@@ -5,7 +5,7 @@
 
   angular.module('nix.diet-graph-directive', ['nix.track-api-client', 'angularMoment']).run(["$templateCache", function ($templateCache) {
     $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button class="previous" class="btn"><i class="fa fa-chevron-left"></i></button>\n                <button class="next" class="btn"><i class="fa fa-chevron-right"></i></button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
-  }]).directive('dietGraph', ["$filter", function ($filter) {
+  }]).directive('dietGraph', ["$filter", "$log", function ($filter, $log) {
     return {
       templateUrl: 'nix.diet-graph-directive.html',
       replace: true,
@@ -14,14 +14,31 @@
       scope: {},
       bindToController: {
         api: '=?',
+        nutrientId: '=?',
+        target: '=?',
+        // deprecated
         targetCalories: '=?',
         enableFdaRound: '=?'
       },
       controller: ["$scope", "nixTrackApiClient", "moment", function controller($scope, nixTrackApiClient, moment) {
         var vm = this;
 
-        vm.targetCalories = vm.targetCalories || 2000;
-        vm.legend = [vm.targetCalories * (100 - 15) / 100, vm.targetCalories * (100 - 15 / 2) / 100, vm.targetCalories, vm.targetCalories * (100 + 15 / 2) / 100, vm.targetCalories * (100 + 15) / 100];
+        if (vm.targetCalories) {
+          $log.warn('Since widget now supports multiple nutrients "targetCalories" is now deprecated, please use "target"');
+        }
+
+        vm.target = vm.target || vm.targetCalories || 2000;
+        vm.nutrientId = vm.nutrientId || 208;
+
+        var nutrientMap = {
+          208: 'total_cal',
+          205: 'total_carb',
+          204: 'total_fat',
+          203: 'total_protein',
+          307: 'total_sodium'
+        };
+
+        vm.legend = [vm.target * (100 - 15) / 100, vm.target * (100 - 15 / 2) / 100, vm.target, vm.target * (100 + 15 / 2) / 100, vm.target * (100 + 15) / 100];
 
         vm.afterLoadDomain = function (date) {
           vm.stats.calculate(date);
@@ -41,7 +58,7 @@
 
             this.total = _.keys(currentMonthTotals).length;
             this.green = _.filter(currentMonthTotals, function (value) {
-              return value <= vm.targetCalories;
+              return value <= vm.target;
             }).length;
             this.greenPercentage = this.green / this.total * 100;
           },
@@ -59,7 +76,7 @@
             vm.calendar = {};
 
             angular.forEach(totals.dates, function (value) {
-              vm.calendar[moment(value.date).unix()] = value.total_cal;
+              vm.calendar[moment(value.date).unix()] = value[nutrientMap[vm.nutrientId]];
             });
 
             vm.stats.calculate();
@@ -81,11 +98,34 @@
           previous: element.find(".previous")
         };
 
+        var nutrientSettings = {
+          208: {
+            title: 'Calories',
+            round: 'calories'
+          },
+          205: {
+            title: 'Carb',
+            round: 'total_carb'
+          },
+          204: {
+            title: 'Fat',
+            round: 'total_fat'
+          },
+          203: {
+            title: 'Protein',
+            round: 'protein'
+          },
+          307: {
+            title: 'Sodium',
+            round: 'sodium'
+          }
+        }[vm.nutrientId];
+
         vm.title = attributes.title || 'Diet Logging Graph';
 
         cal.formatNumber = function (number) {
           if (vm.enableFdaRound) {
-            number = $filter('fdaRound')(number, 'calories');
+            number = $filter('fdaRound')(number, nutrientSettings.round);
           }
           return $filter('number')(number, 0);
         };
@@ -131,7 +171,7 @@
           domainLabelFormat: "%B %Y",
           subDomainTitleFormat: {
             empty: "not tracked",
-            filled: "{count} Calories"
+            filled: '{count} ' + nutrientSettings.title
           }
         });
 
