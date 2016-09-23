@@ -157,9 +157,11 @@
           onMaxDomainReached: function onMaxDomainReached(hit) {
             buttons.next.attr("disabled", hit ? "disabled" : false);
           },
-          onClick: vm.onClickHandler && function (date, value) {
-            vm.onClickHandler(date, value);
-            scope.$apply();
+          onClick: function onClick(date, value) {
+            if (vm.onClickHandler) {
+              vm.onClickHandler(date, value);
+              scope.$apply();
+            }
           },
           legend: vm.legend,
           displayLegend: true,
