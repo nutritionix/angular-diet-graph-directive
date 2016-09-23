@@ -18,7 +18,8 @@
         target: '=?',
         // deprecated
         targetCalories: '=?',
-        enableFdaRound: '=?'
+        enableFdaRound: '=?',
+        onClickHandler: '=?'
       },
       controller: ["$scope", "nixTrackApiClient", "moment", function controller($scope, nixTrackApiClient, moment) {
         var vm = this;
@@ -156,7 +157,10 @@
           onMaxDomainReached: function onMaxDomainReached(hit) {
             buttons.next.attr("disabled", hit ? "disabled" : false);
           },
-
+          onClick: vm.onClickHandler && function (date, value) {
+            vm.onClickHandler(date, value);
+            scope.$apply();
+          },
           legend: vm.legend,
           displayLegend: true,
           legendHorizontalPosition: 'center',
