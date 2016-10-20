@@ -34,7 +34,7 @@
         </div>`
       );
     })
-    .directive('dietGraph', function ($filter, $log, $timeout, moment) {
+    .directive('dietGraph', function ($filter, $log, $timeout, moment, $q) {
       return {
         templateUrl:      'nix.diet-graph-directive.html',
         replace:          true,
@@ -50,7 +50,7 @@
           enableFdaRound: '=?',
           onClickHandler: '=?'
         },
-        controller:       function ($scope, nixTrackApiClient, moment) {
+        controller:       function ($scope, nixTrackApiClient) {
           let vm = this;
 
           vm.disableNavigation = false;
@@ -248,18 +248,24 @@
             }
           });
 
+          let navigationPromise = $q.resolve();
+
           element.on('click', 'button.next, button.previous', e => {
             vm.disableNavigation = true;
             scope.$apply();
-            $timeout(() => vm.disableNavigation = false, animationDuration + 5);
+            navigationPromise = $timeout(() => vm.disableNavigation = false, animationDuration + 5);
           });
 
           scope.$watchCollection('vm.calendar', function () {
             let data = vm.calendar;
 
             if (data) {
-              cal.update(data);
-              cal.options.data = data;
+              navigationPromise.then(() => {
+                try {
+                  cal.update(data);
+                  cal.options.data = data;
+                } catch (e) { }
+              });
             }
           });
         }

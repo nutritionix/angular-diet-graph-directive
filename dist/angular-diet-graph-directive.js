@@ -5,7 +5,7 @@
 
   angular.module('nix.diet-graph-directive', ['nix.track-api-client', 'angularMoment']).run(["$templateCache", function ($templateCache) {
     $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">\n                  <i class="fa fa-chevron-left"></i>\n                </button>\n                <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">\n                  <i class="fa fa-chevron-right"></i>\n                </button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
-  }]).directive('dietGraph', ["$filter", "$log", "$timeout", "moment", function ($filter, $log, $timeout, moment) {
+  }]).directive('dietGraph', ["$filter", "$log", "$timeout", "moment", "$q", function ($filter, $log, $timeout, moment, $q) {
     return {
       templateUrl: 'nix.diet-graph-directive.html',
       replace: true,
@@ -21,7 +21,7 @@
         enableFdaRound: '=?',
         onClickHandler: '=?'
       },
-      controller: ["$scope", "nixTrackApiClient", "moment", function controller($scope, nixTrackApiClient, moment) {
+      controller: ["$scope", "nixTrackApiClient", function controller($scope, nixTrackApiClient) {
         var vm = this;
 
         vm.disableNavigation = false;
@@ -175,7 +175,6 @@
           subDomainTextFormat: "%d",
           range: 1,
           start: new Date(),
-          //minDate:                  new Date(),
           maxDate: new Date(),
           afterLoadPreviousDomain: function afterLoadPreviousDomain(date) {
             vm.monthOffset -= 1;
@@ -219,10 +218,12 @@
           }
         });
 
+        var navigationPromise = $q.resolve();
+
         element.on('click', 'button.next, button.previous', function (e) {
           vm.disableNavigation = true;
           scope.$apply();
-          $timeout(function () {
+          navigationPromise = $timeout(function () {
             return vm.disableNavigation = false;
           }, animationDuration + 5);
         });
@@ -231,10 +232,12 @@
           var data = vm.calendar;
 
           if (data) {
-            cal.update(data);
-            cal.options.data = data;
-            // cal.options.minDate = new Date(+_.min(_.keys(data)) * 1000);
-            // cal.onMinDomainReached(cal.minDomainIsReached(moment().startOf('month').unix() * 1000));
+            navigationPromise.then(function () {
+              try {
+                cal.update(data);
+                cal.options.data = data;
+              } catch (e) {}
+            });
           }
         });
       }
