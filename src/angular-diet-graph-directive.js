@@ -10,8 +10,12 @@
             <div class="panel-heading">{{vm.title}}</div>
             <div class="panel-body text-center">
               <div style="display: inline-block" class="heat-map-calendar">
-                <button class="previous" class="btn"><i class="fa fa-chevron-left"></i></button>
-                <button class="next" class="btn"><i class="fa fa-chevron-right"></i></button>
+                <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">
+                  <i class="fa fa-chevron-left"></i>
+                </button>
+                <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">
+                  <i class="fa fa-chevron-right"></i>
+                </button>
                 <div class="heatMap"></div>
               </div>
 
@@ -28,10 +32,9 @@
             </div>
          </div>
         </div>`
-
       );
     })
-    .directive('dietGraph', function ($filter, $log) {
+    .directive('dietGraph', function ($filter, $log, $timeout, moment) {
       return {
         templateUrl:      'nix.diet-graph-directive.html',
         replace:          true,
@@ -49,6 +52,12 @@
         },
         controller:       function ($scope, nixTrackApiClient, moment) {
           let vm = this;
+
+          vm.disableNavigation = false;
+          vm.disablePrev       = false;
+          vm.disableNext       = false;
+
+          vm.monthOffset = 0;
 
           if (vm.targetCalories) {
             $log.warn('Since widget now supports multiple nutrients "targetCalories" is now deprecated, please use "target"');
@@ -76,13 +85,12 @@
           vm.afterLoadDomain = (date) => { vm.stats.calculate(date); };
 
           vm.stats = {
-            currentMonth:       new Date(),
-            calculate:          function (currentMonth) {
-              currentMonth = this.currentMonth = currentMonth || this.currentMonth;
+            calculate:          function () {
+              let currentMonth       = moment().add(vm.monthOffset, 'month').format('YYYY-MM');
               let currentMonthTotals = this.currentMonthTotals = {};
 
               _.each(vm.calendar, function (value, date) {
-                if (moment(date * 1000).format('YYYY-MM') === moment(currentMonth).format('YYYY-MM')) {
+                if (moment(date * 1000).format('YYYY-MM') === currentMonth) {
                   currentMonthTotals[date] = value;
                 }
               });
@@ -98,20 +106,46 @@
             greenPercentage:    null
           };
 
-          vm.loadTotals = function () {
-            nixTrackApiClient.reports.totals({
-              begin:    moment().utc().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
-              timezone: moment.tz.guess() || "US/Eastern"
-            }).success(function (totals) {
-              vm.calendar = {};
+          vm.calendar = {};
 
+          vm.loadTotals = function () {
+            let monthOffset = vm.monthOffset;
+
+            let begin = moment().startOf('month');
+            if (monthOffset) {
+              begin.add(monthOffset, 'month');
+            }
+
+            let end = begin.clone().add(1, 'month');
+
+            if (end.isAfter(moment())) {
+              end = moment().add(1, 'day').startOf('day');
+            }
+
+            let dataAlreadyWasLoaded = vm.loadTotals.loaded.indexOf(monthOffset) > -1;
+
+            nixTrackApiClient('/reports/totals', {
+              method:           'GET',
+              params:           {
+                begin:    begin.format('YYYY-MM-DD'),
+                end:      end.format('YYYY-MM-DD'),
+                timezone: moment.tz.guess() || "US/Eastern"
+              },
+              ignoreLoadingBar: dataAlreadyWasLoaded
+            }).success(function (totals) {
               angular.forEach(totals.dates, function (value) {
                 vm.calendar[moment(value.date).unix()] = value[nutrientMap[vm.nutrientId]];
               });
 
               vm.stats.calculate();
+
+              if (!dataAlreadyWasLoaded) {
+                vm.loadTotals.loaded.push(monthOffset);
+              }
             });
           };
+
+          vm.loadTotals.loaded = [];
 
           vm.loadTotals();
 
@@ -120,7 +154,7 @@
           };
         },
         link:             function (scope, element, attributes, vm) {
-          let cal = new CalHeatMap();
+          let cal     = new CalHeatMap();
           let buttons = {
             next:     element.find(".next"),
             previous: element.find(".previous")
@@ -158,31 +192,37 @@
             return $filter('number')(number, 0);
           };
 
+          let animationDuration = 250;
+
           cal.init({
-            tooltip:                 true,
-            itemSelector:            element.find('.heatMap')[0],
-            nextSelector:            buttons.next[0],
-            previousSelector:        buttons.previous[0],
-            domain:                  "month",
-            subDomain:               "x_day",
-            subDomainTextFormat:     "%d",
-            range:                   1,
-            start:                   new Date(),
-            minDate:                 new Date(),
-            maxDate:                 new Date(),
+            animationDuration:        animationDuration,
+            tooltip:                  true,
+            itemSelector:             element.find('.heatMap')[0],
+            nextSelector:             buttons.next[0],
+            previousSelector:         buttons.previous[0],
+            domain:                   "month",
+            subDomain:                "x_day",
+            subDomainTextFormat:      "%d",
+            range:                    1,
+            start:                    new Date(),
+            maxDate:                  new Date(),
             afterLoadPreviousDomain:  function (date) {
+              vm.monthOffset -= 1;
+              vm.loadTotals();
               vm.afterLoadDomain(date);
               scope.$apply();
             },
             afterLoadNextDomain:      function (date) {
+              vm.monthOffset += 1;
+              vm.loadTotals();
               vm.afterLoadDomain(date);
               scope.$apply();
             },
             onMinDomainReached:       function (hit) {
-              buttons.previous.attr("disabled", hit ? "disabled" : false);
+              vm.disablePrev = !!hit;
             },
             onMaxDomainReached:       function (hit) {
-              buttons.next.attr("disabled", hit ? "disabled" : false);
+              vm.disableNext = !!hit;
             },
             onClick:                  function (date, value) {
               if (vm.onClickHandler) {
@@ -208,14 +248,18 @@
             }
           });
 
+          element.on('click', 'button.next, button.previous', e => {
+            vm.disableNavigation = true;
+            scope.$apply();
+            $timeout(() => vm.disableNavigation = false, animationDuration + 5);
+          });
+
           scope.$watchCollection('vm.calendar', function () {
             let data = vm.calendar;
 
             if (data) {
               cal.update(data);
               cal.options.data = data;
-              cal.options.minDate = new Date(+_.min(_.keys(data)) * 1000);
-              cal.onMinDomainReached(cal.minDomainIsReached(moment().startOf('month').unix() * 1000));
             }
           });
         }

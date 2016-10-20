@@ -4,8 +4,8 @@
   'use strict';
 
   angular.module('nix.diet-graph-directive', ['nix.track-api-client', 'angularMoment']).run(["$templateCache", function ($templateCache) {
-    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button class="previous" class="btn"><i class="fa fa-chevron-left"></i></button>\n                <button class="next" class="btn"><i class="fa fa-chevron-right"></i></button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
-  }]).directive('dietGraph', ["$filter", "$log", function ($filter, $log) {
+    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">\n                  <i class="fa fa-chevron-left"></i>\n                </button>\n                <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">\n                  <i class="fa fa-chevron-right"></i>\n                </button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
+  }]).directive('dietGraph', ["$filter", "$log", "$timeout", "moment", function ($filter, $log, $timeout, moment) {
     return {
       templateUrl: 'nix.diet-graph-directive.html',
       replace: true,
@@ -23,6 +23,12 @@
       },
       controller: ["$scope", "nixTrackApiClient", "moment", function controller($scope, nixTrackApiClient, moment) {
         var vm = this;
+
+        vm.disableNavigation = false;
+        vm.disablePrev = false;
+        vm.disableNext = false;
+
+        vm.monthOffset = 0;
 
         if (vm.targetCalories) {
           $log.warn('Since widget now supports multiple nutrients "targetCalories" is now deprecated, please use "target"');
@@ -46,13 +52,12 @@
         };
 
         vm.stats = {
-          currentMonth: new Date(),
-          calculate: function calculate(currentMonth) {
-            currentMonth = this.currentMonth = currentMonth || this.currentMonth;
+          calculate: function calculate() {
+            var currentMonth = moment().add(vm.monthOffset, 'month').format('YYYY-MM');
             var currentMonthTotals = this.currentMonthTotals = {};
 
             _.each(vm.calendar, function (value, date) {
-              if (moment(date * 1000).format('YYYY-MM') === moment(currentMonth).format('YYYY-MM')) {
+              if (moment(date * 1000).format('YYYY-MM') === currentMonth) {
                 currentMonthTotals[date] = value;
               }
             });
@@ -69,20 +74,46 @@
           greenPercentage: null
         };
 
-        vm.loadTotals = function () {
-          nixTrackApiClient.reports.totals({
-            begin: moment().utc().subtract(1, 'month').startOf('month').format('YYYY-MM-DD'),
-            timezone: moment.tz.guess() || "US/Eastern"
-          }).success(function (totals) {
-            vm.calendar = {};
+        vm.calendar = {};
 
+        vm.loadTotals = function () {
+          var monthOffset = vm.monthOffset;
+
+          var begin = moment().startOf('month');
+          if (monthOffset) {
+            begin.add(monthOffset, 'month');
+          }
+
+          var end = begin.clone().add(1, 'month');
+
+          if (end.isAfter(moment())) {
+            end = moment().add(1, 'day').startOf('day');
+          }
+
+          var dataAlreadyWasLoaded = vm.loadTotals.loaded.indexOf(monthOffset) > -1;
+
+          nixTrackApiClient('/reports/totals', {
+            method: 'GET',
+            params: {
+              begin: begin.format('YYYY-MM-DD'),
+              end: end.format('YYYY-MM-DD'),
+              timezone: moment.tz.guess() || "US/Eastern"
+            },
+            ignoreLoadingBar: dataAlreadyWasLoaded
+          }).success(function (totals) {
             angular.forEach(totals.dates, function (value) {
               vm.calendar[moment(value.date).unix()] = value[nutrientMap[vm.nutrientId]];
             });
 
             vm.stats.calculate();
+
+            if (!dataAlreadyWasLoaded) {
+              vm.loadTotals.loaded.push(monthOffset);
+            }
           });
         };
+
+        vm.loadTotals.loaded = [];
 
         vm.loadTotals();
 
@@ -131,7 +162,10 @@
           return $filter('number')(number, 0);
         };
 
+        var animationDuration = 250;
+
         cal.init({
+          animationDuration: animationDuration,
           tooltip: true,
           itemSelector: element.find('.heatMap')[0],
           nextSelector: buttons.next[0],
@@ -141,21 +175,25 @@
           subDomainTextFormat: "%d",
           range: 1,
           start: new Date(),
-          minDate: new Date(),
+          //minDate:                  new Date(),
           maxDate: new Date(),
           afterLoadPreviousDomain: function afterLoadPreviousDomain(date) {
+            vm.monthOffset -= 1;
+            vm.loadTotals();
             vm.afterLoadDomain(date);
             scope.$apply();
           },
           afterLoadNextDomain: function afterLoadNextDomain(date) {
+            vm.monthOffset += 1;
+            vm.loadTotals();
             vm.afterLoadDomain(date);
             scope.$apply();
           },
           onMinDomainReached: function onMinDomainReached(hit) {
-            buttons.previous.attr("disabled", hit ? "disabled" : false);
+            vm.disablePrev = !!hit;
           },
           onMaxDomainReached: function onMaxDomainReached(hit) {
-            buttons.next.attr("disabled", hit ? "disabled" : false);
+            vm.disableNext = !!hit;
           },
           onClick: function onClick(date, value) {
             if (vm.onClickHandler) {
@@ -181,14 +219,22 @@
           }
         });
 
+        element.on('click', 'button.next, button.previous', function (e) {
+          vm.disableNavigation = true;
+          scope.$apply();
+          $timeout(function () {
+            return vm.disableNavigation = false;
+          }, animationDuration + 5);
+        });
+
         scope.$watchCollection('vm.calendar', function () {
           var data = vm.calendar;
 
           if (data) {
             cal.update(data);
             cal.options.data = data;
-            cal.options.minDate = new Date(+_.min(_.keys(data)) * 1000);
-            cal.onMinDomainReached(cal.minDomainIsReached(moment().startOf('month').unix() * 1000));
+            // cal.options.minDate = new Date(+_.min(_.keys(data)) * 1000);
+            // cal.onMinDomainReached(cal.minDomainIsReached(moment().startOf('month').unix() * 1000));
           }
         });
       }
