@@ -19,7 +19,8 @@
         // deprecated
         targetCalories: '=?',
         enableFdaRound: '=?',
-        onClickHandler: '=?'
+        onClickHandler: '=?',
+        initialDisplayDate: '=?'
       },
       controller: ["$scope", "nixTrackApiClient", function controller($scope, nixTrackApiClient) {
         var vm = this;
@@ -79,16 +80,14 @@
         vm.loadTotals = function () {
           var monthOffset = vm.monthOffset;
 
-          var begin = moment().startOf('month');
+          console.log(vm.initialDisplayDate);
+
+          var begin = moment(vm.initialDisplayDate).startOf('month');
           if (monthOffset) {
             begin.add(monthOffset, 'month');
           }
 
           var end = begin.clone().add(1, 'month');
-
-          if (end.isAfter(moment())) {
-            end = moment().add(1, 'day').startOf('day');
-          }
 
           var dataAlreadyWasLoaded = vm.loadTotals.loaded.indexOf(monthOffset) > -1;
 
@@ -174,8 +173,7 @@
           subDomain: "x_day",
           subDomainTextFormat: "%d",
           range: 1,
-          start: new Date(),
-          maxDate: new Date(),
+          start: moment(vm.initialDisplayDate).toDate(),
           afterLoadPreviousDomain: function afterLoadPreviousDomain(date) {
             vm.monthOffset -= 1;
             vm.loadTotals();
