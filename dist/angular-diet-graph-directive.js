@@ -77,12 +77,13 @@
 
         vm.calendar = {};
 
+        var initialDisplayDate = moment(vm.initialDisplayDate);
+
         vm.loadTotals = function () {
           var monthOffset = vm.monthOffset;
 
-          console.log(vm.initialDisplayDate);
+          var begin = initialDisplayDate.clone().startOf('month');
 
-          var begin = moment(vm.initialDisplayDate).startOf('month');
           if (monthOffset) {
             begin.add(monthOffset, 'month');
           }
@@ -175,16 +176,18 @@
           range: 1,
           start: moment(vm.initialDisplayDate).toDate(),
           afterLoadPreviousDomain: function afterLoadPreviousDomain(date) {
-            vm.monthOffset -= 1;
-            vm.loadTotals();
-            vm.afterLoadDomain(date);
-            scope.$apply();
+            $timeout(function () {
+              vm.monthOffset -= 1;
+              vm.loadTotals();
+              vm.afterLoadDomain(date);
+            });
           },
           afterLoadNextDomain: function afterLoadNextDomain(date) {
-            vm.monthOffset += 1;
-            vm.loadTotals();
-            vm.afterLoadDomain(date);
-            scope.$apply();
+            $timeout(function () {
+              vm.monthOffset += 1;
+              vm.loadTotals();
+              vm.afterLoadDomain(date);
+            });
           },
           onMinDomainReached: function onMinDomainReached(hit) {
             vm.disablePrev = !!hit;
@@ -225,6 +228,10 @@
             return vm.disableNavigation = false;
           }, animationDuration + 5);
         });
+
+        vm.api.jumpTo = function (date) {
+          cal.jumpTo(moment(date).toDate());
+        };
 
         scope.$watchCollection('vm.calendar', function () {
           var data = vm.calendar;

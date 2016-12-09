@@ -109,12 +109,13 @@
 
         vm.calendar = {};
 
+        let initialDisplayDate = moment(vm.initialDisplayDate);
+
         vm.loadTotals = function () {
           let monthOffset = vm.monthOffset;
 
-          console.log(vm.initialDisplayDate);
+          let begin = initialDisplayDate.clone().startOf('month');
 
-          let begin = moment(vm.initialDisplayDate).startOf('month');
           if (monthOffset) {
             begin.add(monthOffset, 'month');
           }
@@ -205,16 +206,18 @@
           range:                    1,
           start:                    moment(vm.initialDisplayDate).toDate(),
           afterLoadPreviousDomain:  function (date) {
-            vm.monthOffset -= 1;
-            vm.loadTotals();
-            vm.afterLoadDomain(date);
-            scope.$apply();
+            $timeout(() => {
+              vm.monthOffset -= 1;
+              vm.loadTotals();
+              vm.afterLoadDomain(date);
+            });
           },
           afterLoadNextDomain:      function (date) {
-            vm.monthOffset += 1;
-            vm.loadTotals();
-            vm.afterLoadDomain(date);
-            scope.$apply();
+            $timeout(() => {
+              vm.monthOffset += 1;
+              vm.loadTotals();
+              vm.afterLoadDomain(date);
+            });
           },
           onMinDomainReached:       function (hit) {
             vm.disablePrev = !!hit;
@@ -253,6 +256,10 @@
           scope.$apply();
           navigationPromise = $timeout(() => vm.disableNavigation = false, animationDuration + 5);
         });
+
+        vm.api.jumpTo = function (date) {
+          cal.jumpTo(moment(date).toDate());
+        };
 
         scope.$watchCollection('vm.calendar', function () {
           let data = vm.calendar;
