@@ -48,13 +48,13 @@
 
         vm.legend = [vm.target * (100 - 15) / 100, vm.target * (100 - 15 / 2) / 100, vm.target, vm.target * (100 + 15 / 2) / 100, vm.target * (100 + 15) / 100];
 
-        vm.afterLoadDomain = function (date) {
-          vm.stats.calculate(date);
+        vm.afterLoadDomain = function () {
+          vm.stats.calculate();
         };
 
         vm.stats = {
           calculate: function calculate() {
-            var currentMonth = moment().add(vm.monthOffset, 'month').format('YYYY-MM');
+            var currentMonth = initialDisplayDate.clone().add(vm.monthOffset, 'month').format('YYYY-MM');
             var currentMonthTotals = this.currentMonthTotals = {};
 
             _.each(vm.calendar, function (value, date) {

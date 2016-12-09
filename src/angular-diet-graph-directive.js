@@ -83,11 +83,11 @@
           vm.target * (100 + 15) / 100
         ];
 
-        vm.afterLoadDomain = (date) => { vm.stats.calculate(date); };
+        vm.afterLoadDomain = () => { vm.stats.calculate(); };
 
         vm.stats = {
           calculate:          function () {
-            let currentMonth       = moment().add(vm.monthOffset, 'month').format('YYYY-MM');
+            let currentMonth       = initialDisplayDate.clone().add(vm.monthOffset, 'month').format('YYYY-MM');
             let currentMonthTotals = this.currentMonthTotals = {};
 
             _.each(vm.calendar, function (value, date) {
