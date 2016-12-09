@@ -194,6 +194,8 @@
 
         let animationDuration = 250;
 
+        let initialDisplayDate = moment(vm.initialDisplayDate);
+
         cal.init({
           animationDuration:        animationDuration,
           tooltip:                  true,
@@ -207,14 +209,14 @@
           start:                    moment(vm.initialDisplayDate).toDate(),
           afterLoadPreviousDomain:  function (date) {
             $timeout(() => {
-              vm.monthOffset -= 1;
+              vm.monthOffset = -initialDisplayDate.clone().startOf('month').diff(moment(date).startOf('month'), 'month');
               vm.loadTotals();
               vm.afterLoadDomain(date);
             });
           },
           afterLoadNextDomain:      function (date) {
             $timeout(() => {
-              vm.monthOffset += 1;
+              vm.monthOffset = -initialDisplayDate.clone().startOf('month').diff(moment(date).startOf('month'), 'month');
               vm.loadTotals();
               vm.afterLoadDomain(date);
             });

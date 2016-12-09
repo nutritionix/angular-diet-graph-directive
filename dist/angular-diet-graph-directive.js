@@ -164,6 +164,8 @@
 
         var animationDuration = 250;
 
+        var initialDisplayDate = moment(vm.initialDisplayDate);
+
         cal.init({
           animationDuration: animationDuration,
           tooltip: true,
@@ -177,14 +179,14 @@
           start: moment(vm.initialDisplayDate).toDate(),
           afterLoadPreviousDomain: function afterLoadPreviousDomain(date) {
             $timeout(function () {
-              vm.monthOffset -= 1;
+              vm.monthOffset = -initialDisplayDate.clone().startOf('month').diff(moment(date).startOf('month'), 'month');
               vm.loadTotals();
               vm.afterLoadDomain(date);
             });
           },
           afterLoadNextDomain: function afterLoadNextDomain(date) {
             $timeout(function () {
-              vm.monthOffset += 1;
+              vm.monthOffset = -initialDisplayDate.clone().startOf('month').diff(moment(date).startOf('month'), 'month');
               vm.loadTotals();
               vm.afterLoadDomain(date);
             });
