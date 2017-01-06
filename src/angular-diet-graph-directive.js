@@ -108,6 +108,7 @@
         };
 
         vm.calendar = {};
+        vm.fullData = {};
 
         let initialDisplayDate = moment(vm.initialDisplayDate);
 
@@ -134,7 +135,13 @@
             ignoreLoadingBar: dataAlreadyWasLoaded
           }).success(function (totals) {
             angular.forEach(totals.dates, function (value) {
-              vm.calendar[moment(value.date).unix()] = value[nutrientMap[vm.nutrientId]];
+              let val = value[nutrientMap[vm.nutrientId]];
+              if (vm.nutrientId === 208) {
+                val -= value.total_cal_burned;
+              }
+
+              vm.calendar[moment(value.date).unix()] = val;
+              vm.fullData[moment(value.date).unix()] = value;
             });
 
             vm.stats.calculate();
@@ -247,7 +254,18 @@
           domainLabelFormat:    "%B %Y",
           subDomainTitleFormat: {
             empty:  "not tracked",
-            filled: `{count} ${nutrientSettings.title}`
+            // filled: `{count} ${nutrientSettings.title}`
+            filled: {
+              format: function (params) {
+                let fullData = vm.fullData[moment(params.date, "dddd MMMM DD, YYYY").unix()];
+
+                if (vm.nutrientId === 208 && fullData.total_cal_burned > 0) {
+                  return `${$filter('number')(fullData.total_cal, 0)} ${nutrientSettings.title} consumed, ${$filter('number')(fullData.total_cal_burned, 0)} ${nutrientSettings.title} burned`;
+                } else {
+                  return `${params.count} ${nutrientSettings.title}`;
+                }
+              }
+            }
           }
         });
 
