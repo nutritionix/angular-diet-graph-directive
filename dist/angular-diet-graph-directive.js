@@ -103,13 +103,15 @@
             ignoreLoadingBar: dataAlreadyWasLoaded
           }).success(function (totals) {
             angular.forEach(totals.dates, function (value) {
-              var val = value[nutrientMap[vm.nutrientId]];
-              if (vm.nutrientId === 208) {
-                val -= value.total_cal_burned;
-              }
+              if (value.total_cal > 0 || value.total_cal_burned > 0) {
+                var val = value[nutrientMap[vm.nutrientId]];
+                if (vm.nutrientId === 208) {
+                  val -= value.total_cal_burned;
+                }
 
-              vm.calendar[moment(value.date).unix()] = val;
-              vm.fullData[moment(value.date).unix()] = value;
+                vm.calendar[moment(value.date).unix()] = val;
+                vm.fullData[moment(value.date).unix()] = value;
+              }
             });
 
             vm.stats.calculate();
