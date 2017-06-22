@@ -67,20 +67,12 @@
         vm.target     = vm.target || vm.targetCalories || 2000;
         vm.nutrientId = vm.nutrientId || 208;
 
-        let nutrientMap = {
-          208: 'total_cal',
-          205: 'total_carb',
-          204: 'total_fat',
-          203: 'total_protein',
-          307: 'total_sodium'
-        };
-
         vm.legend = [
-          vm.target * (100 - 15) / 100,
-          vm.target * (100 - 15 / 2) / 100,
-          vm.target,
-          vm.target * (100 + 15 / 2) / 100,
-          vm.target * (100 + 15) / 100
+          85,
+          92.5,
+          100,
+          107.5,
+          115
         ];
 
         vm.afterLoadDomain = () => { vm.stats.calculate(); };
@@ -98,7 +90,7 @@
 
 
             this.total           = _.keys(currentMonthTotals).length;
-            this.green           = _.filter(currentMonthTotals, value => value <= vm.target).length;
+            this.green           = _.filter(currentMonthTotals, value => value <= 100).length;
             this.greenPercentage = this.green / this.total * 100;
           },
           currentMonthTotals: null,
@@ -136,10 +128,7 @@
           }).success(function (totals) {
             angular.forEach(totals.dates, function (value) {
               if (value.total_cal > 0 || value.total_cal_burned > 0) {
-                let val = value[nutrientMap[vm.nutrientId]];
-                if (vm.nutrientId === 208) {
-                  val -= value.total_cal_burned;
-                }
+                let val = (value.total_cal - value.total_cal_burned) / (value.daily_kcal_limit || vm.target) * 100;
 
                 vm.calendar[moment(value.date).unix()] = val;
                 vm.fullData[moment(value.date).unix()] = value;
@@ -261,11 +250,8 @@
               format: function (params) {
                 let fullData = vm.fullData[moment(params.date, "dddd MMMM DD, YYYY").unix()];
 
-                if (vm.nutrientId === 208 && fullData.total_cal_burned > 0) {
-                  return `${$filter('number')(fullData.total_cal, 0)} ${nutrientSettings.title} consumed, ${$filter('number')(fullData.total_cal_burned, 0)} ${nutrientSettings.title} burned`;
-                } else {
-                  return `${params.count} ${nutrientSettings.title}`;
-                }
+                return `${$filter('number')(fullData.total_cal, 0)} ${nutrientSettings.title} consumed\n` +
+                  `${$filter('number')(fullData.total_cal_burned, 0)} ${nutrientSettings.title} burned`;
               }
             }
           }

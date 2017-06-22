@@ -1,6 +1,6 @@
 {
   "name": "angular-diet-graph-directive",
-  "version": "1.8.0",
+  "version": "1.9.0",
   "title": "Angular Diet Logging Graph",
   "description": "AngularJS directive component for showing diet logging calendar",
   "repository": {
