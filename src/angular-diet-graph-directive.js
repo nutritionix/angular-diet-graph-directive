@@ -19,10 +19,14 @@
                 <div class="heatMap"></div>
               </div>
 
-              <div class="row graph-summary" ng-if="vm.stats.total">
-                <div class="column">
+              <div class="row graph-summary" ng-if="vm.stats.total || vm.stats.missed">
+                <div class="column" ng-if="!vm.showMissed">
                   <p>Total Days Tracked</p>
                   <strong>{{vm.stats.total}} Days</strong>
+                </div>
+                <div class="column" ng-if="vm.showMissed">
+                  <p>Days Missed</p>
+                  <strong>{{vm.stats.missed}} Days</strong>
                 </div>
                 <div class="column">
                   <p>% Days of Green</p>
@@ -49,7 +53,8 @@
         targetCalories:     '=?',
         enableFdaRound:     '=?',
         onClickHandler:     '=?',
-        initialDisplayDate: '=?'
+        initialDisplayDate: '=?',
+        showMissed:         '=?'
       },
       controller:       function ($scope, nixTrackApiClient) {
         let vm = this;
@@ -90,11 +95,15 @@
 
 
             this.total           = _.keys(currentMonthTotals).length;
+            this.missed          = moment().format('YYYY-MM') === currentMonth ?
+              moment().date() - this.total :
+              moment(currentMonth).daysInMonth() - this.total;
             this.green           = _.filter(currentMonthTotals, value => value <= 100).length;
-            this.greenPercentage = this.green / this.total * 100;
+            this.greenPercentage = (this.green / this.total * 100) || 0;
           },
           currentMonthTotals: null,
           total:              null,
+          missed:             null,
           green:              null,
           greenPercentage:    null
         };

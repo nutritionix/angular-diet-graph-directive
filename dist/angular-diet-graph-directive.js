@@ -4,7 +4,7 @@
   'use strict';
 
   angular.module('nix.diet-graph-directive', ['nix.track-api-client', 'angularMoment']).run(["$templateCache", function ($templateCache) {
-    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">\n                  <i class="fa fa-chevron-left"></i>\n                </button>\n                <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">\n                  <i class="fa fa-chevron-right"></i>\n                </button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total">\n                <div class="column">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
+    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">\n                  <i class="fa fa-chevron-left"></i>\n                </button>\n                <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">\n                  <i class="fa fa-chevron-right"></i>\n                </button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total || vm.stats.missed">\n                <div class="column" ng-if="!vm.showMissed">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column" ng-if="vm.showMissed">\n                  <p>Days Missed</p>\n                  <strong>{{vm.stats.missed}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
   }]).directive('dietGraph', ["$filter", "$log", "$timeout", "moment", "$q", function ($filter, $log, $timeout, moment, $q) {
     return {
       templateUrl: 'nix.diet-graph-directive.html',
@@ -20,7 +20,8 @@
         targetCalories: '=?',
         enableFdaRound: '=?',
         onClickHandler: '=?',
-        initialDisplayDate: '=?'
+        initialDisplayDate: '=?',
+        showMissed: '=?'
       },
       controller: ["$scope", "nixTrackApiClient", function controller($scope, nixTrackApiClient) {
         var vm = this;
@@ -56,13 +57,15 @@
             });
 
             this.total = _.keys(currentMonthTotals).length;
+            this.missed = moment().format('YYYY-MM') === currentMonth ? moment().date() - this.total : moment(currentMonth).daysInMonth() - this.total;
             this.green = _.filter(currentMonthTotals, function (value) {
               return value <= 100;
             }).length;
-            this.greenPercentage = this.green / this.total * 100;
+            this.greenPercentage = this.green / this.total * 100 || 0;
           },
           currentMonthTotals: null,
           total: null,
+          missed: null,
           green: null,
           greenPercentage: null
         };
