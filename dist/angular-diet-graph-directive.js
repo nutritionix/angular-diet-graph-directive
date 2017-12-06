@@ -57,7 +57,17 @@
             });
 
             this.total = _.keys(currentMonthTotals).length;
-            this.missed = moment().format('YYYY-MM') === currentMonth ? moment().date() - this.total : moment(currentMonth).daysInMonth() - this.total;
+
+            if (moment().format('YYYY-MM') === currentMonth) {
+              this.missed = moment().date() - 1 - _.keys(currentMonthTotals).filter(function (date) {
+                return moment(date * 1000).format('YYYY-MM-DD') < moment().format('YYYY-MM-DD');
+              }).length;
+            } else if (moment().format('YYYY-MM') < currentMonth) {
+              this.missed = 0;
+            } else {
+              this.missed = moment(currentMonth).daysInMonth() - this.total;
+            }
+
             this.green = _.filter(currentMonthTotals, function (value) {
               return value <= 100;
             }).length;

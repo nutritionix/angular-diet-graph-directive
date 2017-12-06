@@ -95,9 +95,17 @@
 
 
             this.total           = _.keys(currentMonthTotals).length;
-            this.missed          = moment().format('YYYY-MM') === currentMonth ?
-              moment().date() - this.total :
-              moment(currentMonth).daysInMonth() - this.total;
+
+            if (moment().format('YYYY-MM') === currentMonth) {
+              this.missed = (moment().date() - 1) - _.keys(currentMonthTotals).filter(
+                date => moment(date * 1000).format('YYYY-MM-DD') < moment().format('YYYY-MM-DD')
+              ).length;
+            } else if (moment().format('YYYY-MM') < currentMonth) {
+              this.missed = 0;
+            } else {
+              this.missed = moment(currentMonth).daysInMonth() - this.total;
+            }
+
             this.green           = _.filter(currentMonthTotals, value => value <= 100).length;
             this.greenPercentage = (this.green / this.total * 100) || 0;
           },
