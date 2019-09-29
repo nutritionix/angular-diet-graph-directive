@@ -149,6 +149,9 @@
 
                 vm.calendar[moment(value.date).unix()] = val;
                 vm.fullData[moment(value.date).unix()] = value;
+              } else {
+                delete vm.calendar[moment(value.date).unix()];
+                delete vm.fullData[moment(value.date).unix()];
               }
             });
 
