@@ -50,16 +50,18 @@
             var currentMonth = initialDisplayDate.clone().add(vm.monthOffset, 'month').format('YYYY-MM');
             var currentMonthTotals = this.currentMonthTotals = {};
 
-            _.each(vm.calendar, function (value, date) {
+            Object.keys(vm.calendar).forEach(function (date) {
+              var value = vm.calendar[date];
+
               if (moment(date * 1000).format('YYYY-MM') === currentMonth) {
                 currentMonthTotals[date] = value;
               }
             });
 
-            this.total = _.keys(currentMonthTotals).length;
+            this.total = Object.keys(currentMonthTotals).length;
 
             if (moment().format('YYYY-MM') === currentMonth) {
-              this.missed = moment().date() - 1 - _.keys(currentMonthTotals).filter(function (date) {
+              this.missed = moment().date() - 1 - Object.keys(currentMonthTotals).filter(function (date) {
                 return moment(date * 1000).format('YYYY-MM-DD') < moment().format('YYYY-MM-DD');
               }).length;
             } else if (moment().format('YYYY-MM') < currentMonth) {
@@ -68,7 +70,7 @@
               this.missed = moment(currentMonth).daysInMonth() - this.total;
             }
 
-            this.green = _.filter(currentMonthTotals, function (value) {
+            this.green = Object.values(currentMonthTotals).filter(function (value) {
               return value <= 100;
             }).length;
             this.greenPercentage = this.green / this.total * 100 || 0;
