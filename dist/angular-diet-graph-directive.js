@@ -4,7 +4,7 @@
   'use strict';
 
   angular.module('nix.diet-graph-directive', ['nix.track-api-client', 'angularMoment']).run(["$templateCache", function ($templateCache) {
-    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n          <div class="panel panel-default panel-graph">\n            <div class="panel-heading">{{vm.title}}</div>\n            <div class="panel-body text-center">\n              <div style="display: inline-block" class="heat-map-calendar">\n                <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">\n                  <i class="fa fa-chevron-left"></i>\n                </button>\n                <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">\n                  <i class="fa fa-chevron-right"></i>\n                </button>\n                <div class="heatMap"></div>\n              </div>\n\n              <div class="row graph-summary" ng-if="vm.stats.total || vm.stats.missed">\n                <div class="column" ng-if="!vm.showMissed">\n                  <p>Total Days Tracked</p>\n                  <strong>{{vm.stats.total}} Days</strong>\n                </div>\n                <div class="column" ng-if="vm.showMissed">\n                  <p>Days Missed</p>\n                  <strong>{{vm.stats.missed}} Days</strong>\n                </div>\n                <div class="column">\n                  <p>% Days of Green</p>\n                  <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n                </div>\n              </div>\n            </div>\n         </div>\n        </div>');
+    $templateCache.put('nix.diet-graph-directive.html', '<div class="nix_diet-graph">\n        <div class="panel panel-default panel-graph">\n          <div class="panel-heading">{{vm.title}}</div>\n          <div class="panel-body text-center">\n            <div style="display: inline-block" class="heat-map-calendar">\n              <button ng-disabled="vm.disableNavigation || vm.disablePrev" class="previous" class="btn">\n                <i class="fa fa-chevron-left"></i>\n              </button>\n              <button ng-disabled="vm.disableNavigation || vm.disableNext" class="next" class="btn">\n                <i class="fa fa-chevron-right"></i>\n              </button>\n              <div class="heatMap"></div>\n            </div>\n\n            <div class="row graph-summary" ng-if="vm.stats.total || vm.stats.missed">\n              <div class="column" ng-if="!vm.showMissed">\n                <p>Total Days Tracked</p>\n                <strong>{{vm.stats.total}} Days</strong>\n              </div>\n              <div class="column" ng-if="vm.showMissed">\n                <p>Days Missed</p>\n                <strong>{{vm.stats.missed}} Days</strong>\n              </div>\n              <div class="column">\n                <p>% Days of Green</p>\n                <strong>{{vm.stats.greenPercentage | number: 0}}%</strong>\n              </div>\n            </div>\n          </div>\n       </div>\n      </div>');
   }]).directive('dietGraph', ["$filter", "$log", "$timeout", "moment", "$q", function ($filter, $log, $timeout, moment, $q) {
     return {
       templateUrl: 'nix.diet-graph-directive.html',
@@ -16,8 +16,6 @@
         api: '=?',
         nutrientId: '=?',
         target: '=?',
-        // deprecated
-        targetCalories: '=?',
         enableFdaRound: '=?',
         onClickHandler: '=?',
         initialDisplayDate: '=?',
@@ -26,114 +24,114 @@
       controller: ["$scope", "nixTrackApiClient", function controller($scope, nixTrackApiClient) {
         var vm = this;
 
-        vm.disableNavigation = false;
-        vm.disablePrev = false;
-        vm.disableNext = false;
+        vm.$onInit = function $onInit() {
+          vm.disableNavigation = false;
+          vm.disablePrev = false;
+          vm.disableNext = false;
 
-        vm.monthOffset = 0;
+          vm.monthOffset = 0;
 
-        if (vm.targetCalories) {
-          $log.warn('Since widget now supports multiple nutrients "targetCalories" is now deprecated, please use "target"');
-        }
+          vm.target = vm.target || vm.targetCalories || 2000;
+          vm.nutrientId = vm.nutrientId || 208;
 
-        vm.target = vm.target || vm.targetCalories || 2000;
-        vm.nutrientId = vm.nutrientId || 208;
+          vm.legend = [85, 92.5, 100, 107.5, 115];
 
-        vm.legend = [85, 92.5, 100, 107.5, 115];
-
-        vm.afterLoadDomain = function () {
-          vm.stats.calculate();
-        };
-
-        vm.stats = {
-          calculate: function calculate() {
-            var currentMonth = initialDisplayDate.clone().add(vm.monthOffset, 'month').format('YYYY-MM');
-            var currentMonthTotals = this.currentMonthTotals = {};
-
-            Object.keys(vm.calendar).forEach(function (date) {
-              var value = vm.calendar[date];
-
-              if (moment(date * 1000).format('YYYY-MM') === currentMonth) {
-                currentMonthTotals[date] = value;
-              }
-            });
-
-            this.total = Object.keys(currentMonthTotals).length;
-
-            if (moment().format('YYYY-MM') === currentMonth) {
-              this.missed = moment().date() - 1 - Object.keys(currentMonthTotals).filter(function (date) {
-                return moment(date * 1000).format('YYYY-MM-DD') < moment().format('YYYY-MM-DD');
-              }).length;
-            } else if (moment().format('YYYY-MM') < currentMonth) {
-              this.missed = 0;
-            } else {
-              this.missed = moment(currentMonth).daysInMonth() - this.total;
-            }
-
-            this.green = Object.values(currentMonthTotals).filter(function (value) {
-              return value <= 100;
-            }).length;
-            this.greenPercentage = this.green / this.total * 100 || 0;
-          },
-          currentMonthTotals: null,
-          total: null,
-          missed: null,
-          green: null,
-          greenPercentage: null
-        };
-
-        vm.calendar = {};
-        vm.fullData = {};
-
-        var initialDisplayDate = moment(vm.initialDisplayDate);
-
-        vm.loadTotals = function () {
-          var monthOffset = vm.monthOffset;
-
-          var begin = initialDisplayDate.clone().startOf('month');
-
-          if (monthOffset) {
-            begin.add(monthOffset, 'month');
-          }
-
-          var end = begin.clone().add(1, 'month');
-
-          var dataAlreadyWasLoaded = vm.loadTotals.loaded.indexOf(monthOffset) > -1;
-
-          nixTrackApiClient('/reports/totals', {
-            method: 'GET',
-            params: {
-              begin: begin.format('YYYY-MM-DD'),
-              end: end.format('YYYY-MM-DD'),
-              timezone: moment.tz.guess() || "US/Eastern"
-            },
-            ignoreLoadingBar: dataAlreadyWasLoaded
-          }).success(function (totals) {
-            angular.forEach(totals.dates, function (value) {
-              if (value.total_cal > 0 || value.total_cal_burned > 0) {
-                var val = (value.total_cal - value.total_cal_burned) / (value.daily_kcal_limit || vm.target) * 100;
-
-                vm.calendar[moment(value.date).unix()] = val;
-                vm.fullData[moment(value.date).unix()] = value;
-              }
-            });
-
+          vm.afterLoadDomain = function () {
             vm.stats.calculate();
+          };
 
-            if (!dataAlreadyWasLoaded) {
-              vm.loadTotals.loaded.push(monthOffset);
+          vm.stats = {
+            calculate: function calculate() {
+              var currentMonth = initialDisplayDate.clone().add(vm.monthOffset, 'month').format('YYYY-MM');
+              var currentMonthTotals = this.currentMonthTotals = {};
+
+              Object.keys(vm.calendar).forEach(function (date) {
+                var value = vm.calendar[date];
+
+                if (moment(date * 1000).format('YYYY-MM') === currentMonth) {
+                  currentMonthTotals[date] = value;
+                }
+              });
+
+              this.total = Object.keys(currentMonthTotals).length;
+
+              if (moment().format('YYYY-MM') === currentMonth) {
+                this.missed = moment().date() - 1 - Object.keys(currentMonthTotals).filter(function (date) {
+                  return moment(date * 1000).format('YYYY-MM-DD') < moment().format('YYYY-MM-DD');
+                }).length;
+              } else if (moment().format('YYYY-MM') < currentMonth) {
+                this.missed = 0;
+              } else {
+                this.missed = moment(currentMonth).daysInMonth() - this.total;
+              }
+
+              this.green = Object.values(currentMonthTotals).filter(function (value) {
+                return value <= 100;
+              }).length;
+              this.greenPercentage = this.green / this.total * 100 || 0;
+            },
+            currentMonthTotals: null,
+            total: null,
+            missed: null,
+            green: null,
+            greenPercentage: null
+          };
+
+          vm.calendar = {};
+          vm.fullData = {};
+
+          var initialDisplayDate = moment(vm.initialDisplayDate);
+
+          vm.loadTotals = function () {
+            var monthOffset = vm.monthOffset;
+
+            var begin = initialDisplayDate.clone().startOf('month');
+
+            if (monthOffset) {
+              begin.add(monthOffset, 'month');
             }
-          });
-        };
 
-        vm.loadTotals.loaded = [];
+            var end = begin.clone().add(1, 'month');
 
-        vm.loadTotals();
+            var dataAlreadyWasLoaded = vm.loadTotals.loaded.indexOf(monthOffset) > -1;
 
-        vm.api = {
-          refresh: function refresh() {
-            return vm.loadTotals();
-          }
+            nixTrackApiClient('/reports/totals', {
+              method: 'GET',
+              params: {
+                begin: begin.format('YYYY-MM-DD'),
+                end: end.format('YYYY-MM-DD'),
+                timezone: moment.tz.guess() || "US/Eastern"
+              },
+              ignoreLoadingBar: dataAlreadyWasLoaded
+            }).then(function (response) {
+              var totals = response.data;
+
+              angular.forEach(totals.dates, function (value) {
+                if (value.total_cal > 0 || value.total_cal_burned > 0) {
+                  var val = (value.total_cal - value.total_cal_burned) / (value.daily_kcal_limit || vm.target) * 100;
+
+                  vm.calendar[moment(value.date).unix()] = val;
+                  vm.fullData[moment(value.date).unix()] = value;
+                }
+              });
+
+              vm.stats.calculate();
+
+              if (!dataAlreadyWasLoaded) {
+                vm.loadTotals.loaded.push(monthOffset);
+              }
+            });
+          };
+
+          vm.loadTotals.loaded = [];
+
+          vm.loadTotals();
+
+          vm.api = {
+            refresh: function refresh() {
+              return vm.loadTotals();
+            }
+          };
         };
       }],
       link: function link(scope, element, attributes, vm) {
